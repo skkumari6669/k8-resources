@@ -5,4 +5,6 @@ metadata:
 spec:
   container:  # equivalent to docker run -d --name nginx nginx
   - name: nginx
-    image: nginx
+    image: nginx  #nginx:stable-perl in case of version change
+
+
