@@ -1,0 +1,75 @@
+# this is pv (wrapper object to external volume)
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-static
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce  
+  storageClassName: ""
+  persistanceVolumeReclaimPolicy: Retain
+  csi:
+    driver: efs.csi.aws.com
+    fsType: ext4
+    volumeHandle: #<custom volume id> take from aws efs volume 
+
+------
+# this is pvc (pv claim access to get external storage data)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: efs-claim
+spec:
+  storageClassName: "" # Empty string must be explicitly set otherwise default StorageClass will be set
+  volumeName: efs-static # ref from persistent volume 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  
+
+-------
+# this is pod  
+apiVersion: v1
+kind: Pod
+metadata:
+  name: efs-static
+  labels:
+    purpose: efs-static
+spec:
+  # nodeselector:
+  #   topology.kubernetes.io/zone: us-east-1d
+  containers:
+  - name: nginx
+    image: nginx
+    volumeMounts: # docker run -v hostpath:containerpath
+    - name: efs-static
+      mountPath: /usr/share/nginx/html
+  volumes:
+  - name: efs-static
+    persistentVolumeClaim:
+      claimName: efs-claim  
+
+-------
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-lb
+spec:
+  type: LoadBalancer
+  selector:
+   purpose: efs-static
+  ports:
+  - name: nginx-svc-port
+    protocol: TCP
+    port: 80 # service port
+    targetPort: 80 # container port
+    nodeport: 30007
+
+  
+
