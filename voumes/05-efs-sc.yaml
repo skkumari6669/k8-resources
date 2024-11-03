@@ -8,4 +8,5 @@ volumeBindingMode: WaitForFirstConsumer #storage class is created when pod is ge
 parameters: 
   provisioningMode: efs-ap
   fileSystemId: # our custom files system id
+  directoryPerms: "700"
   basePath: "/expense"

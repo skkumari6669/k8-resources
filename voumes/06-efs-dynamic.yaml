@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ebs-claim-dynamic # claim name
+  name: efs-claim-dynamic # claim name
 spec:
-  storageClassName: "expense-ebs" # Empty string must be explicitly set otherwise default StorageClass will be set
+  storageClassName: "efs-sc" # Empty string must be explicitly set otherwise default StorageClass will be set
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 3Gi  
@@ -16,9 +16,9 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: ebs-dynamic
+  name: efs-dynamic
   labels:
-    purpose: ebs-dynamic
+    purpose: efs-dynamic
 spec:
   # nodeselector:
   #   topology.kubernetes.io/zone: us-east-1d
@@ -26,12 +26,12 @@ spec:
   - name: nginx
     image: nginx
     volumeMounts: # docker run -v hostpath:containerpath
-    - name: ebs-dynamic
+    - name: efs-dynamic
       mountPath: /usr/share/nginx/html
   volumes:
-  - name: ebs-dynamic
+  - name: efs-dynamic
     persistentVolumeClaim:
-      claimName: ebs-claim-dynamic  
+      claimName: efs-claim-dynamic  
 
 -------
 
@@ -42,7 +42,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-   purpose: ebs-dynamic
+   purpose: efs-dynamic
   ports:
   - name: nginx-svc-port
     protocol: TCP
